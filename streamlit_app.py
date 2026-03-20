@@ -213,6 +213,9 @@ st.markdown("""
     }
 
     /* Single and Primary Buttons */
+    .stButton, .stButton > div, .stButton button {
+        width: 100% !important;
+    }
     .stButton button {
         background: linear-gradient(90deg, #6366f1, #7c3aed) !important;
         color: white !important;
@@ -221,9 +224,11 @@ st.markdown("""
         padding: 0.75rem 1rem !important;
         font-weight: 600 !important;
         font-size: 1rem !important;
-        width: 100% !important;
         margin-top: 1rem !important;
         transition: transform 0.2s ease, opacity 0.2s ease !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
     .stButton button:hover {
         opacity: 0.95 !important;
@@ -371,7 +376,7 @@ def page_login():
         if st.button("Create Account", key="btn_reg"):
             secret = crypto.generate_totp_secret()
             # Generate a random starting balance between ₹5,000 and ₹150,000
-            start_bal = round(random.uniform(5000.0, 150000.0), 2)
+            start_bal = float(round(random.uniform(5000.0, 150000.0), 2))
             acc_num = str(random.randint(1000000000, 9999999999))
             new = models.User(username=ru, account_number=acc_num, password_hash=security.get_password_hash(rp), totp_secret=secret, balance=start_bal)
             db.add(new)
