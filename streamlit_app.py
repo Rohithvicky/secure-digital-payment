@@ -374,16 +374,30 @@ def page_login():
         ru = st.text_input("Choose a Username", key="reg_u", placeholder="admin")
         rp = st.text_input("Create Password", type="password", key="reg_p", placeholder="••••••••")
         if st.button("Create Account", key="btn_reg"):
-            secret = crypto.generate_totp_secret()
-            # Generate a random starting balance between ₹5,000 and ₹150,000
-            start_bal = float(round(random.uniform(5000.0, 150000.0), 2))
-            acc_num = str(random.randint(1000000000, 9999999999))
-            new = models.User(username=ru, account_number=acc_num, password_hash=security.get_password_hash(rp), totp_secret=secret, balance=start_bal)
-            db.add(new)
-            db.commit()
-            st.success("Account successfully created.")
-            st.info(f"Your Account Number is: **{acc_num}** (Give this to others so they can pay you)")
-            st.warning(f"Please save this 2FA Secret Key for your Authenticator App: {secret}")
+            if not ru or not rp:
+                st.error("Username and Password are required.")
+            else:
+                # Check if username already exists
+                existing_user = db.query(models.User).filter(models.User.username == ru).first()
+                if existing_user:
+                    st.error(f"Username '{ru}' is already taken. Please choose another one.")
+                else:
+                    secret = crypto.generate_totp_secret()
+                    # Generate a random starting balance between ₹5,000 and ₹150,000
+                    start_bal = float(round(random.uniform(5000.0, 150000.0), 2))
+                    
+                    # Ensure a unique account number is generated
+                    while True:
+                        acc_num = str(random.randint(1000000000, 9999999999))
+                        if not db.query(models.User).filter(models.User.account_number == acc_num).first():
+                            break
+
+                    new = models.User(username=ru, account_number=acc_num, password_hash=security.get_password_hash(rp), totp_secret=secret, balance=start_bal)
+                    db.add(new)
+                    db.commit()
+                    st.success("Account successfully created.")
+                    st.info(f"Your Account Number is: **{acc_num}** (Give this to others so they can pay you)")
+                    st.warning(f"Please save this 2FA Secret Key for your Authenticator App: {secret}")
 
 
 # --- Page: Dashboard ---
